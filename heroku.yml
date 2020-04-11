@@ -2,11 +2,11 @@ build:
   docker:
     slotter: Dockerfile
   config:
-    FROM_ADDR: ${FROM_ADDR}
-    TO_ADDR: ${TO_ADDR}
-    EMAIL_PASSWORD: ${EMAIL_PASSWORD}
-    CITY1: ${CITY1}
-    CITY2: ${CITY2}
-    AREA1: ${AREA1}
-    AREA2: ${AREA2}
-    URL: ${URL}
+    FROM_ADDR: bbslotter@gmail.com
+    TO_ADDR: saubhik.mukherjee@gmail.com
+    EMAIL_PASSWORD: 23340964
+    CITY1: Kolkata
+    CITY2: Mumbai
+    AREA1: Karunamoyee Housing
+    AREA2: Lake Homes
+    URL: https://www.bigbasket.com/pd/241600/tata-salt--iodized-1-kg-pouch/
