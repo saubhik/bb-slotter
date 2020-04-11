@@ -1,0 +1,12 @@
+build:
+  docker:
+    slotter: Dockerfile
+  config:
+    FROM_ADDR: ${FROM_ADDR}
+    TO_ADDR: ${TO_ADDR}
+    EMAIL_PASSWORD: ${EMAIL_PASSWORD}
+    CITY1: ${CITY1}
+    CITY2: ${CITY2}
+    AREA1: ${AREA1}
+    AREA2: ${AREA2}
+    URL: ${URL}
