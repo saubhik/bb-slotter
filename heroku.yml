@@ -1,5 +1,0 @@
-build:
-  docker:
-    slotter: Dockerfile
-run:
-  slotter: python3 script.py

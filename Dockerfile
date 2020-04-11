@@ -17,4 +17,22 @@ RUN wget https://chromedriver.storage.googleapis.com/81.0.4044.69/chromedriver_l
 RUN wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
 RUN dpkg -i google-chrome-stable_current_amd64.deb; apt-get -fy install
 
-CMD tail -f /dev/null
+ARG FROM_ADDR
+ARG TO_ADDR
+ARG EMAIL_PASSWORD
+ARG CITY1
+ARG CITY2
+ARG AREA1
+ARG AREA2
+ARG URL
+
+ENV FROM_ADDR=$FROM_ADDR
+ENV TO_ADDR=$TO_ADDR
+ENV EMAIL_PASSWORD=$EMAIL_PASSWORD
+ENV CITY1=$CITY1
+ENV CITY2=$CITY2
+ENV AREA1=$AREA1
+ENV AREA2=$AREA2
+ENV URL=$URL
+
+ENTRYPOINT python3 script.py

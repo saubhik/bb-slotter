@@ -31,7 +31,7 @@ def send_email(location: Dict, message: str) -> None:
     logging.info("Trying to send email...")
 
     sent_from = os.environ["FROM_ADDR"]
-    to = [os.environ["TO_ADDR1"], os.environ["TO_ADDR2"]]
+    to = [os.environ["TO_ADDR"], sent_from]
     subject = f"{location['city']} BB Slot Available!"
     body = """\
     Check out BB right now!
@@ -47,7 +47,7 @@ def send_email(location: Dict, message: str) -> None:
     try:
         server = smtplib.SMTP_SSL("smtp.gmail.com", 465)
         server.ehlo()
-        server.login(user=sent_from, password=os.environ["PASSWORD"])
+        server.login(user=sent_from, password=os.environ["EMAIL_PASSWORD"])
         server.sendmail(
             from_addr=sent_from,
             to_addrs=to,
