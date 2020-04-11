@@ -7,4 +7,5 @@ build:
 	--build-arg CITY2="${CITY2}" \
 	--build-arg AREA1="${AREA1}" \
 	--build-arg AREA2="${AREA2}" \
-	--build-arg URL="${URL}"
+	--build-arg URL="${URL}" \
+	--no-cache
