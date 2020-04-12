@@ -170,6 +170,12 @@ def run_service():
 
         except Exception as exc:
             logging.warning(f"Raised exception: {type(exc).__name__}")
+            logging.info("Starting a new session...")
+            driver.close()
+            driver = webdriver.Chrome(options=options)
+            driver.implicitly_wait(time_to_wait=10)
+            wait = WebDriverWait(driver=driver, timeout=20)
+            first_time = True
 
 
 if __name__ == "__main__":
