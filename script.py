@@ -1,28 +1,16 @@
+import json
 import logging
 import os
 import smtplib
 import time
-from datetime import datetime, timedelta
-from typing import Dict
+from datetime import datetime
+from typing import Dict, List
 
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.support.wait import WebDriverWait
-
-locations = [
-    {
-        "city": os.environ["CITY1"],
-        "area": os.environ["AREA1"],
-        "email_ts": datetime.utcnow() - timedelta(hours=1),
-    },
-    {
-        "city": os.environ["CITY2"],
-        "area": os.environ["AREA2"],
-        "email_ts": datetime.utcnow() - timedelta(hours=1),
-    },
-]
 
 
 def _sanitise_string(text: str):
@@ -31,16 +19,17 @@ def _sanitise_string(text: str):
     )
 
 
-def send_email(location: Dict, message: str) -> None:
-    if (datetime.utcnow() - location["email_ts"]).total_seconds() < 60 * 5:
-        logging.info("I do not want to send frequent emails...")
-        return
+def send_email(subscriber: Dict, message: str) -> None:
+    if "email_ts" in subscriber:
+        if (datetime.utcnow() - subscriber["email_ts"]).total_seconds() < 60 * 5:
+            logging.info("I do not want to send frequent emails...")
+            return
 
     logging.info("Trying to send email...")
 
-    sent_from = os.environ["FROM_ADDR"]
-    to = [os.environ["TO_ADDR"], sent_from]
-    subject = f"{location['city']} BB Slot Available!"
+    from_addr = os.environ["FROM_ADDR"]
+    to = [from_addr, subscriber["email"]]
+    subject = f"{subscriber['city']} BB Slot Available!"
     body = """\
     Check out BB right now!
     Details are given as follows.
@@ -55,13 +44,13 @@ def send_email(location: Dict, message: str) -> None:
     try:
         server = smtplib.SMTP_SSL("smtp.gmail.com", 465)
         server.ehlo()
-        server.login(user=sent_from, password=os.environ["EMAIL_PASSWORD"])
+        server.login(user=from_addr, password=os.environ["EMAIL_PASSWORD"])
         server.sendmail(
-            from_addr=sent_from,
+            from_addr=from_addr,
             to_addrs=to,
             msg="Subject: {}\n\n{}".format(subject, body),
         )
-        location["email_ts"] = datetime.utcnow()
+        subscriber["email_ts"] = datetime.utcnow()
         logging.info("Email sent...")
     except Exception as e:
         logging.warning(f"Error during emailing {e}")
@@ -78,12 +67,18 @@ def run_service():
     driver = webdriver.Chrome(options=options)
     driver.implicitly_wait(time_to_wait=10)
     wait = WebDriverWait(driver=driver, timeout=20)
+
+    with open(file="subscribers.json", mode="r") as file:
+        subscribers: List[Dict] = json.load(file)
+
     first_time = True
 
     while True:
         try:
-            for location in locations:
-                logging.info(f"Trying location {location['city']}")
+            for subscriber in subscribers:
+                logging.info(
+                    f"Trying city: {subscriber['city']}, area: {subscriber['area']}"
+                )
 
                 driver.get(url=os.environ["URL"])
                 time.sleep(5)
@@ -122,7 +117,7 @@ def run_service():
                         (By.XPATH, "//input[@placeholder='Select your city']")
                     )
                 )
-                city_element.send_keys(location["city"])
+                city_element.send_keys(subscriber["city"])
                 time.sleep(1)
                 city_element.send_keys(Keys.RETURN)
                 time.sleep(1)
@@ -137,7 +132,7 @@ def run_service():
                         )
                     )
                 )
-                area_element.send_keys(location["area"])
+                area_element.send_keys(subscriber["area"])
                 time.sleep(1)
                 area_element.send_keys(Keys.RETURN)
                 time.sleep(1)
@@ -167,9 +162,9 @@ def run_service():
                 else:
                     logging.info("Found available slot!")
                     send_email(
-                        location=location,
-                        message=f"City: {location['city']}, "
-                        f"Area: {location['area']}, "
+                        subscriber=subscriber,
+                        message=f"City: {subscriber['city']}, "
+                        f"Area: {subscriber['area']}, "
                         f"Slot: {slot_element.text}",
                     )
 

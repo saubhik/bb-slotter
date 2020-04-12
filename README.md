@@ -16,19 +16,27 @@ Docker container running in AWS EC2 instance:
 
 ![image-20200412122335908](./screenshots/image-20200412122335908.png)
 
-## Example of env vars
+## Building image
 
 These environment variables must be present while building the (executable) docker image using `make build`.
 
 ```bash
 FROM_ADDR=...
-TO_ADDR=...
 EMAIL_PASSWORD=...
-CITY1=...
-AREA1=...
-CITY2=...
-AREA2=...
 URL=https://www.bigbasket.com/pd/241600/tata-salt--iodized-1-kg-pouch/
+```
+
+Also, before building image, `subscribers.json` file is required.
+Example:
+```json
+[
+  {
+    "city": "xyz",
+    "area": "xyz",
+    "email": "xyz@abc.com"
+  },
+  ...
+]
 ```
 
 ## Disclaimer
