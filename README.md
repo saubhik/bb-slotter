@@ -1,4 +1,4 @@
-# slotter
+# bb-slotter
 Get email alerts for delivery slots in BB :email: :dark_sunglasses:
 
 Easily extensible to:
@@ -8,7 +8,7 @@ Easily extensible to:
 
 ---
 
-#### `slotter` in action
+#### `bb-slotter` in action
 
 Docker container running in AWS EC2 instance:
 
