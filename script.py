@@ -5,7 +5,6 @@ import time
 from datetime import datetime, timedelta
 from typing import Dict
 
-import fire
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
@@ -174,4 +173,4 @@ def run_service():
 
 if __name__ == "__main__":
     logging.basicConfig(level="INFO")
-    fire.Fire(run_service())
+    run_service()
