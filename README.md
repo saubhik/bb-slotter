@@ -18,7 +18,7 @@ Docker container running in AWS EC2 instance:
 
 ## Example of env vars
 
-These environment variables must be present while building the (executable) docker image.
+These environment variables must be present while building the (executable) docker image using `make build`.
 
 ```bash
 FROM_ADDR=...
