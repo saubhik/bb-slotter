@@ -21,7 +21,7 @@ def _sanitise_string(text: str):
 
 def send_email(subscriber: Dict, message: str) -> None:
     if "email_ts" in subscriber:
-        if (datetime.utcnow() - subscriber["email_ts"]).total_seconds() < 60 * 5:
+        if (datetime.utcnow() - subscriber["email_ts"]).total_seconds() < 60 * 2:
             logging.info("I do not want to send frequent emails...")
             return
 
