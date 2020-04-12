@@ -7,7 +7,7 @@ Get email alerts for delivery slots in BB :email: :dark_sunglasses:
 
 Docker container running in AWS EC2 instance:
 
-![image-20200412121846370](./screenshots/image-20200412121846370.png)
+![image-20200412122911322](./screenshots/image-20200412122911322.png)
 
 ---
 
