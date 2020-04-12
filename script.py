@@ -25,6 +25,12 @@ locations = [
 ]
 
 
+def _sanitise_string(text: str):
+    return (
+        text.encode(encoding="ascii", errors="ignore").decode(encoding="ascii").strip()
+    )
+
+
 def send_email(location: Dict, message: str) -> None:
     if (datetime.utcnow() - location["email_ts"]).total_seconds() < 60 * 5:
         logging.info("I do not want to send frequent emails...")
@@ -106,7 +112,7 @@ def run_service():
                         (By.XPATH, "//div[@id='modal']/div/div/div[2]/div[1]/span")
                     )
                 )
-                logging.info(f"Changing city from {element.text}...")
+                logging.info(f"Changing city from {_sanitise_string(element.text)}...")
                 element.click()
                 time.sleep(1)
 
@@ -168,7 +174,7 @@ def run_service():
                     )
 
         except Exception as exc:
-            logging.warning(f"Raised exception: {exc}")
+            logging.warning(f"Raised exception: {type(exc).__name__}")
 
 
 if __name__ == "__main__":
