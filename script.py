@@ -7,7 +7,10 @@ from typing import Dict
 
 import fire
 from selenium import webdriver
+from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.support import expected_conditions
+from selenium.webdriver.support.wait import WebDriverWait
 
 locations = [
     {
@@ -24,7 +27,7 @@ locations = [
 
 
 def send_email(location: Dict, message: str) -> None:
-    if (datetime.utcnow() - location["email_ts"]).total_seconds() < 60 * 2:
+    if (datetime.utcnow() - location["email_ts"]).total_seconds() < 60 * 5:
         logging.info("I do not want to send frequent emails...")
         return
 
@@ -67,72 +70,106 @@ def run_service():
     options.add_argument("--start-maximized")
     options.add_argument("--no-sandbox")
 
-    # download & move chromedriver to PATH
     driver = webdriver.Chrome(options=options)
+    driver.implicitly_wait(time_to_wait=10)
+    wait = WebDriverWait(driver=driver, timeout=20)
     first_time = True
 
     while True:
-        for location in locations:
-            logging.info(f"Trying location {location['city']}")
+        try:
+            for location in locations:
+                logging.info(f"Trying location {location['city']}")
 
-            driver.get(url=os.environ["URL"])
-            time.sleep(5)
+                driver.get(url=os.environ["URL"])
+                time.sleep(5)
 
-            if first_time:
-                location_element = driver.find_element_by_xpath(
-                    "//div[@id='mainHeader']/div[3]/div[1]/div[2]"
+                if first_time:
+                    location_element = wait.until(
+                        expected_conditions.presence_of_element_located(
+                            (By.XPATH, "//div[@id='mainHeader']/div[3]/div[1]/div[2]")
+                        )
+                    )
+                    logging.info(f"Currently at {location_element.text}...")
+                    location_element.click()
+                    time.sleep(1)
+                    first_time = False
+                else:
+                    element = wait.until(
+                        expected_conditions.presence_of_element_located(
+                            (By.XPATH, "//div[@id='mainHeader']//div[2]//div/div[2]")
+                        )
+                    )
+                    element.click()
+                    time.sleep(1)
+
+                element = wait.until(
+                    expected_conditions.presence_of_element_located(
+                        (By.XPATH, "//div[@id='modal']/div/div/div[2]/div[1]/span")
+                    )
                 )
-                logging.info(f"Currently at {location_element.text}...")
-                location_element.click()
-                time.sleep(1)
-                first_time = False
-            else:
-                element = driver.find_element_by_xpath(
-                    "//div[@id='mainHeader']//div[2]//div/div[2]"
-                )
+                logging.info(f"Changing city from {element.text}...")
                 element.click()
                 time.sleep(1)
 
-            element = driver.find_element_by_xpath(
-                "//div[@id='modal']/div/div/div[2]/div[1]/span"
-            )
-            logging.info(f"Changing city from {element.text}...")
-            element.click()
-            time.sleep(1)
-            city_element = driver.find_element_by_xpath(
-                "//input[@placeholder='Select your city']"
-            )
-            city_element.send_keys(location["city"])
-            time.sleep(1)
-            city_element.send_keys(Keys.RETURN)
-            time.sleep(1)
-            area_element = driver.find_element_by_xpath(
-                "//input[@placeholder='Enter your area / apartment / pincode']"
-            )
-            area_element.send_keys(location["area"])
-            time.sleep(1)
-            area_element.send_keys(Keys.RETURN)
-            time.sleep(1)
-            submit_btn = driver.find_element_by_xpath(
-                "//form[@action='/choose-city/']/button"
-            )
-            submit_btn.click()
-            time.sleep(5)
-            slot_element = driver.find_element_by_xpath(
-                "//div[@id='root']/div/div[2]/div[2]/div[3]/section/div[2]/div"
-            )
-
-            if "All Slots Full. Please Try Again Later" in slot_element.text:
-                logging.info("Found all slots full. Refreshing...")
-            else:
-                logging.info("Found available slot!")
-                logging.info(f"Slot details: {slot_element.text}")
-                send_email(
-                    location=location,
-                    message=f"City: {location['city']}, "
-                    f"Area: {location['area']}, "
-                    f"Slot: {slot_element.text}",
+                # change city
+                city_element = wait.until(
+                    expected_conditions.presence_of_element_located(
+                        (By.XPATH, "//input[@placeholder='Select your city']")
+                    )
                 )
+                city_element.send_keys(location["city"])
+                time.sleep(1)
+                city_element.send_keys(Keys.RETURN)
+                time.sleep(1)
+
+                # change area
+                area_element = wait.until(
+                    expected_conditions.presence_of_element_located(
+                        (
+                            By.XPATH,
+                            "//input"
+                            "[@placeholder='Enter your area / apartment / pincode']",
+                        )
+                    )
+                )
+                area_element.send_keys(location["area"])
+                time.sleep(1)
+                area_element.send_keys(Keys.RETURN)
+                time.sleep(1)
+
+                # submit location change
+                submit_btn = wait.until(
+                    expected_conditions.presence_of_element_located(
+                        (By.XPATH, "//form[@action='/choose-city/']/button")
+                    )
+                )
+                submit_btn.click()
+                time.sleep(1)
+
+                # check slot element
+                slot_element = wait.until(
+                    expected_conditions.presence_of_element_located(
+                        (
+                            By.XPATH,
+                            "//div[@id='root']/"
+                            "div/div[2]/div[2]/div[3]/section/div[2]/div",
+                        )
+                    )
+                )
+
+                if "All Slots Full. Please Try Again Later" in slot_element.text:
+                    logging.info("Found all slots full. Refreshing...")
+                else:
+                    logging.info("Found available slot!")
+                    send_email(
+                        location=location,
+                        message=f"City: {location['city']}, "
+                        f"Area: {location['area']}, "
+                        f"Slot: {slot_element.text}",
+                    )
+
+        except Exception as exc:
+            logging.warning(f"Raised exception: {exc}")
 
 
 if __name__ == "__main__":
