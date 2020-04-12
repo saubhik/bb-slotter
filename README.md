@@ -1,6 +1,11 @@
 # slotter
 Get email alerts for delivery slots in BB :email: :dark_sunglasses:
 
+Easily extensible to:
+
+- support multiple email recipients
+- support multiple cities and pin codes
+
 ---
 
 #### `slotter` in action
