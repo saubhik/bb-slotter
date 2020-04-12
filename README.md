@@ -6,25 +6,19 @@ Easily extensible to:
 - support multiple email recipients
 - support multiple cities and pin codes
 
----
-
-#### `bb-slotter` in action
+## `bb-slotter` in action
 
 Docker container running in AWS EC2 instance:
 
 ![image-20200412122911322](./screenshots/image-20200412122911322.png)
 
----
-
-#### Email alert example
+## Email alert example
 
 ![image-20200412122335908](./screenshots/image-20200412122335908.png)
 
----
+## Example of env vars
 
-#### Example of env vars
-
-These variables must be present while building the (executable) docker image.
+These environment variables must be present while building the (executable) docker image.
 
 ```bash
 FROM_ADDR=...
@@ -37,8 +31,6 @@ AREA2=...
 URL=https://www.bigbasket.com/pd/241600/tata-salt--iodized-1-kg-pouch/
 ```
 
----
-
-#### Disclaimer
+## Disclaimer
 
 For educational purposes. BigBasket T&C [here](https://www.bigbasket.com/terms-and-conditions/).
