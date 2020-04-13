@@ -4,3 +4,6 @@ build:
 	--build-arg EMAIL_PASSWORD="${EMAIL_PASSWORD}" \
 	--build-arg URL="${URL}" \
 	--no-cache
+
+run:
+	docker run -v /dev/shm:/dev/shm bb-slotter:latest --name bb-slotter-service
