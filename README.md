@@ -39,6 +39,14 @@ Example:
 ]
 ```
 
+## Running the image
+
+```bash
+docker run -v /dev/shm:/dev/shm bb-slotter:latest --name bb-slotter-service
+```
+
+We need to mount the host's shared memory, otherwise we might encounter crashes.
+
 ## Disclaimer
 
 For educational purposes. BigBasket T&C [here](https://www.bigbasket.com/terms-and-conditions/).
