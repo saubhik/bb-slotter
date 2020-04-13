@@ -10,7 +10,7 @@ Easily extensible to:
 
 Docker container running in AWS EC2 instance:
 
-![image-20200412122911322](./screenshots/image-20200412122911322.png)
+![image-20200413092518550](./screenshots/image-20200413092518550.png)
 
 ## Email alert example
 
@@ -31,11 +31,15 @@ Example:
 ```json
 [
   {
-    "city": "xyz",
-    "area": "xyz",
-    "email": "xyz@abc.com"
+    "city": "xyz1",
+    "area": "xyz1",
+    "email": "xyz1@abc.com"
   },
-  ...
+  {
+    "city": "xyz2",
+    "area": "xyz2",
+    "email": "xyz2@abc.com"
+  }
 ]
 ```
 
