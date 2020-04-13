@@ -6,6 +6,8 @@ Easily extensible to:
 - support multiple email recipients
 - support multiple cities and pin codes
 
+For more details on hosting the app, read [here](DEPLOY.md).
+
 ## `bb-slotter` in action
 
 Docker container running in AWS EC2 instance:
