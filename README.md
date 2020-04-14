@@ -29,6 +29,7 @@ URL=https://www.bigbasket.com/pd/241600/tata-salt--iodized-1-kg-pouch/
 ```
 
 Also, before building image, `subscribers.json` file is required.
+Please note that the `area` string should be exactly as in one of BigBasket's auto-suggestions in the drop down.
 
 Example:
 
