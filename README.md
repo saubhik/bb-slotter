@@ -29,7 +29,9 @@ URL=https://www.bigbasket.com/pd/241600/tata-salt--iodized-1-kg-pouch/
 ```
 
 Also, before building image, `subscribers.json` file is required.
+
 Example:
+
 ```json
 [
   {

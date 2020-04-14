@@ -31,12 +31,7 @@ Add a `subscribers.json` file which is of the format:
 ```
 You can add as many subscribers as you like (ideally `~5`, since currently there is no concurrency). Alerts will be sent to these emails.
 
-Note that the area string should be something which has a suggestion in the drop down, and the first suggestion is selected. For example:
-If `area="Bellandur Lake"`, then we are actually sending `Bellandur Lake Rd-560103, Bangalore` to the server as shown:
-
-![79089409-0b2d6900-7d81-11ea-94cb-b68ce72a7da6](./screenshots/79089409-0b2d6900-7d81-11ea-94cb-b68ce72a7da6.png)
-
-*So make sure you add an `area` string for which BigBasket gives the right first suggestion which is where you want to check the slots for.*
+<u>Note that the area string should be something which has a suggestion in the drop down.</u>
 
 After the above 2 steps, just do `make build`.
 
