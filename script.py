@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+import re
 import smtplib
 import time
 from datetime import datetime
@@ -132,10 +133,20 @@ def run_service():
                         )
                     )
                 )
-                area_element.send_keys(subscriber["area"])
-                time.sleep(1)
-                area_element.send_keys(Keys.RETURN)
-                time.sleep(1)
+
+                area_element.send_keys(re.match(r"[a-zA-Z]+", subscriber["area"])[0])
+                area_choices = wait.until(
+                    expected_conditions.presence_of_all_elements_located(
+                        (By.XPATH, "//div[@id='modal']//ul/div")
+                    )
+                )
+
+                for choice in area_choices:
+                    if choice.text == subscriber["area"]:
+                        logging.info(f"Found area {choice.text}")
+                        choice.click()
+                        time.sleep(1)
+                        break
 
                 # submit location change
                 submit_btn = wait.until(
