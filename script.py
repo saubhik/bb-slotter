@@ -30,7 +30,7 @@ def send_email(subscriber: Dict, message: str) -> None:
 
     from_addr = os.environ["FROM_ADDR"]
     to = [from_addr, subscriber["email"]]
-    subject = f"{subscriber['city']}-{subscriber['area']} BB Slot Available!"
+    subject = f"{subscriber['area']} BB Slot Available!"
     body = """\
     Check out BB right now!
     Details are given as follows.
