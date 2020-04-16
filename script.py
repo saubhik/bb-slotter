@@ -144,12 +144,18 @@ def run_service():
                     )
                 )
 
+                area_found = False
                 for choice in area_choices:
                     if choice.text == subscriber["area"]:
+                        area_found = True
                         logging.info(f"Found area {choice.text}")
                         choice.click()
                         time.sleep(1)
                         break
+
+                if not area_found:
+                    logging.error(msg=f"Area {subscriber['area']} not found")
+                    continue
 
                 # submit location change
                 submit_btn = wait.until(
