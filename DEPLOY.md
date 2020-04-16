@@ -15,6 +15,7 @@ I use the above `URL` to check whether there are slots (since I think salt is su
 So you can keep the `URL` as it is.
 
 Add a `subscribers.json` file which is of the format:
+Note that `email` can also be a list of strings.
 ```json
 [
   {
@@ -25,7 +26,7 @@ Add a `subscribers.json` file which is of the format:
   {
     "city": "xyz2",
     "area": "xyz2",
-    "email": "xyz2@abc.com"
+    "email": ["xyz2@abc.com", "xyz3@abc.com"]
   }
 ]
 ```

@@ -30,6 +30,7 @@ URL=https://www.bigbasket.com/pd/241600/tata-salt--iodized-1-kg-pouch/
 
 Also, before building image, `subscribers.json` file is required.
 Please note that the `area` string should be exactly as in one of BigBasket's auto-suggestions in the drop down.
+Note that `email` can also be a list of strings.
 
 Example:
 
@@ -43,7 +44,7 @@ Example:
   {
     "city": "xyz2",
     "area": "xyz2",
-    "email": "xyz2@abc.com"
+    "email": ["xyz2@abc.com", "xyz3@abc.com"]
   }
 ]
 ```
