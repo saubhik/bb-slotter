@@ -29,7 +29,10 @@ def send_email(subscriber: Dict, message: str) -> None:
     logging.info("Trying to send email...")
 
     from_addr = os.environ["FROM_ADDR"]
-    to = [from_addr, subscriber["email"]]
+    if isinstance(subscriber["email"], list):
+        to_addrs = subscriber["email"].append(from_addr)
+    else:
+        to_addrs = [subscriber["email"], from_addr]
     subject = f"{subscriber['area']} BB Slot Available!"
     body = """\
     Check out BB right now!
@@ -48,7 +51,7 @@ def send_email(subscriber: Dict, message: str) -> None:
         server.login(user=from_addr, password=os.environ["EMAIL_PASSWORD"])
         server.sendmail(
             from_addr=from_addr,
-            to_addrs=to,
+            to_addrs=to_addrs,
             msg="Subject: {}\n\n{}".format(subject, body),
         )
         subscriber["email_ts"] = datetime.utcnow()
