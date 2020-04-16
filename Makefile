@@ -6,4 +6,4 @@ build:
 	--no-cache
 
 run:
-	docker run -v /dev/shm:/dev/shm bb-slotter:latest --name=bb-slotter-service
+	docker run --name=bb-slotter-service -v /dev/shm:/dev/shm bb-slotter:latest
