@@ -30,7 +30,7 @@ def send_email(subscriber: Dict, message: str) -> None:
 
     from_addr = os.environ["FROM_ADDR"]
     if isinstance(subscriber["email"], list):
-        to_addrs = subscriber["email"].append(from_addr)
+        to_addrs = subscriber["email"] + [from_addr]
     else:
         to_addrs = [subscriber["email"], from_addr]
     subject = f"{subscriber['area']} BB Slot Available!"
