@@ -3,7 +3,6 @@ import logging
 import os
 import re
 import smtplib
-import time
 from datetime import datetime
 from typing import Dict, List
 
@@ -85,7 +84,6 @@ def run_service():
                 )
 
                 driver.get(url=os.environ["URL"])
-                time.sleep(5)
 
                 if first_time:
                     location_element = wait.until(
@@ -95,7 +93,6 @@ def run_service():
                     )
                     logging.info(f"Currently at {location_element.text}...")
                     location_element.click()
-                    time.sleep(1)
                     first_time = False
                 else:
                     element = wait.until(
@@ -104,7 +101,6 @@ def run_service():
                         )
                     )
                     element.click()
-                    time.sleep(1)
 
                 element = wait.until(
                     expected_conditions.presence_of_element_located(
@@ -113,7 +109,6 @@ def run_service():
                 )
                 logging.info(f"Changing city from {_sanitise_string(element.text)}...")
                 element.click()
-                time.sleep(1)
 
                 # change city
                 city_element = wait.until(
@@ -122,9 +117,7 @@ def run_service():
                     )
                 )
                 city_element.send_keys(subscriber["city"])
-                time.sleep(1)
                 city_element.send_keys(Keys.RETURN)
-                time.sleep(1)
 
                 # change area
                 area_element = wait.until(
@@ -150,7 +143,6 @@ def run_service():
                         area_found = True
                         logging.info(f"Found area {choice.text}")
                         choice.click()
-                        time.sleep(1)
                         break
 
                 if not area_found:
@@ -164,7 +156,6 @@ def run_service():
                     )
                 )
                 submit_btn.click()
-                time.sleep(1)
 
                 # check slot element
                 slot_element = wait.until(
