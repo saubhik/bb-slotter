@@ -96,8 +96,8 @@ def run_service():
                     first_time = False
                 else:
                     element = wait.until(
-                        expected_conditions.presence_of_element_located(
-                            (By.XPATH, "//div[@id='mainHeader']//div[2]//div/div[2]")
+                        expected_conditions.element_to_be_clickable(
+                            (By.XPATH, "//div[@id='mainHeader']/div[2]/div/div[2]")
                         )
                     )
                     element.click()
@@ -169,7 +169,7 @@ def run_service():
                 )
 
                 if "All Slots Full. Please Try Again Later" in slot_element.text:
-                    logging.info("Found all slots full. Refreshing...")
+                    logging.info("Found all slots full...")
                 else:
                     logging.info("Found available slot!")
                     send_email(
