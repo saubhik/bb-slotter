@@ -7,6 +7,7 @@ from datetime import datetime
 from typing import Dict, List
 
 from selenium import webdriver
+from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support import expected_conditions
@@ -158,26 +159,29 @@ def run_service():
                 submit_btn.click()
 
                 # check slot element
-                slot_element = wait.until(
-                    expected_conditions.presence_of_element_located(
-                        (
-                            By.XPATH,
-                            "//div[@id='root']/"
-                            "div/div[2]/div[2]/div[3]/section/div[2]/div",
+                try:
+                    slot_element = wait.until(
+                        expected_conditions.presence_of_element_located(
+                            (
+                                By.XPATH,
+                                "//div[@id='root']/"
+                                "div/div[2]/div[2]/div[3]/section/div[2]/div",
+                            )
                         )
                     )
-                )
 
-                if "All Slots Full. Please Try Again Later" in slot_element.text:
-                    logging.info("Found all slots full...")
-                else:
-                    logging.info("Found available slot!")
-                    send_email(
-                        subscriber=subscriber,
-                        message=f"City: {subscriber['city']}, "
-                        f"Area: {subscriber['area']}, "
-                        f"Slot: {slot_element.text}",
-                    )
+                    if "All Slots Full. Please Try Again Later" in slot_element.text:
+                        logging.info("Found all slots full...")
+                    else:
+                        logging.info("Found available slot!")
+                        send_email(
+                            subscriber=subscriber,
+                            message=f"City: {subscriber['city']}, "
+                            f"Area: {subscriber['area']}, "
+                            f"Slot: {slot_element.text}",
+                        )
+                except TimeoutException:
+                    logging.warning("Timeout trying to get slot information")
 
         except Exception as exc:
             logging.warning(f"Raised exception: {type(exc).__name__}")
