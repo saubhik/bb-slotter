@@ -96,7 +96,7 @@ def run_service():
 
                 # change city
                 city_element = wait.until(
-                    expected_conditions.presence_of_element_located(
+                    expected_conditions.element_to_be_clickable(
                         (By.XPATH, "//input[@placeholder='Select your city']")
                     )
                 )
