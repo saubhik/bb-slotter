@@ -19,10 +19,8 @@ RUN dpkg -i google-chrome-stable_current_amd64.deb; apt-get -fy install
 
 ARG FROM_ADDR
 ARG EMAIL_PASSWORD
-ARG URL
 
 ENV FROM_ADDR=${FROM_ADDR}
 ENV EMAIL_PASSWORD=${EMAIL_PASSWORD}
-ENV URL=${URL}
 
 ENTRYPOINT python3 script.py
