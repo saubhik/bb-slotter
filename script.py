@@ -56,7 +56,7 @@ def send_email(subscriber: Dict, message: str) -> None:
         subscriber["email_ts"] = datetime.utcnow()
         logging.info("Email sent...")
     except Exception as e:
-        logging.warning(f"Error during emailing {e}")
+        logging.exception(e)
 
 
 def run_service():
@@ -158,22 +158,29 @@ def run_service():
                 ).click()
 
                 # check slot element
-                slot_element = wait.until(
+                slot_found = wait.until(
+                    expected_conditions.text_to_be_present_in_element(
+                        (By.XPATH, "//div[contains(@class, 'homepage-card')]"),
+                        "STANDARD",
+                    )
+                )
+
+                slot_info = wait.until(
                     expected_conditions.presence_of_element_located(
                         (By.XPATH, "//div[contains(@class, 'homepage-card')]")
                     )
                 )
 
-                if "All Slots Full. Please Try Again Later" in slot_element.text:
-                    logging.info("Found all slots full...")
-                else:
+                if slot_found:
                     logging.info("Found available slot!")
                     send_email(
                         subscriber=subscriber,
                         message=f"City: {subscriber['city']}, "
                         f"Area: {subscriber['area']}, "
-                        f"Slot: {slot_element.text}",
+                        f"Slot: {slot_info.text}",
                     )
+                else:
+                    logging.info("Found all slots full...")
 
                 driver.delete_all_cookies()
 
