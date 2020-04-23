@@ -61,6 +61,7 @@ def send_email(subscriber: Dict, message: str) -> None:
 
 def run_service():
     options = webdriver.ChromeOptions()
+    options.add_argument("--no-sandbox")
     options.add_argument("--headless")
     mobile_emulation = {
         "deviceMetrics": {"width": 360, "height": 640, "pixelRatio": 3.0},
