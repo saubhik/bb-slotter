@@ -76,6 +76,7 @@ def run_service():
         subscribers: List[Dict] = json.load(file)
 
     first_time = True
+    previous_city = ""
 
     while True:
         try:
@@ -101,7 +102,11 @@ def run_service():
                 else:
                     element = wait.until(
                         expected_conditions.element_to_be_clickable(
-                            (By.XPATH, "//div[@id='mainHeader']/div[2]/div/div[2]")
+                            (
+                                By.XPATH,
+                                "//div[@id='mainHeader']//*[contains(text(), "
+                                f"'{previous_city}')]",
+                            )
                         )
                     )
                     element.click()
@@ -186,9 +191,12 @@ def run_service():
                 except TimeoutException:
                     logging.warning("Timeout trying to get slot information")
 
+                previous_city = subscriber["city"]
+
         except Exception as exc:
             logging.exception(exc)
             logging.info("Starting a new session...")
+            driver.delete_all_cookies()
             driver.close()
             driver = webdriver.Chrome(options=options)
             driver.implicitly_wait(time_to_wait=10)
