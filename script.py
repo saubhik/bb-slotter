@@ -166,6 +166,9 @@ def run_service():
                 )
                 submit_btn.click()
 
+                # refresh the page
+                driver.refresh()
+
                 # check slot element
                 try:
                     slot_element = wait.until(
