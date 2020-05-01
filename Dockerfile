@@ -2,8 +2,9 @@ FROM ubuntu:latest
 
 COPY script.py requirements.txt subscribers.json /
 
+# https://serverfault.com/a/992421 for tzdata
 RUN apt-get update \
-    && apt-get install -y vim wget unzip python3 libnss3 libgconf-2-4 libxi6 python3-pip \
+    && DEBIAN_FRONTEND="noninteractive" apt-get install -y tzdata vim wget unzip python3 libnss3 libgconf-2-4 libxi6 python3-pip \
     && pip3 install --upgrade pip \
     && pip install -r requirements.txt
 

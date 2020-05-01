@@ -75,6 +75,8 @@ def run_service():
     with open(file="subscribers.json", mode="r") as file:
         subscribers: List[Dict] = json.load(file)
 
+    previous_city = "Change Location"
+
     while True:
         try:
             for subscriber in subscribers:
@@ -92,7 +94,7 @@ def run_service():
                         (
                             By.XPATH,
                             "//div[@id='mainHeader']//*[contains(text(), "
-                            f"'Change Location')]",
+                            f"'{previous_city}')]",
                         )
                     )
                 )
@@ -181,7 +183,7 @@ def run_service():
                 except TimeoutException:
                     logging.warning("Timeout trying to get slot information")
 
-                driver.delete_all_cookies()
+                previous_city = subscriber["city"]
 
         except Exception as exc:
             logging.exception(exc)
@@ -190,6 +192,7 @@ def run_service():
             driver = webdriver.Chrome(options=options)
             driver.implicitly_wait(time_to_wait=10)
             wait = WebDriverWait(driver=driver, timeout=20)
+            previous_city = "Change Location"
 
 
 if __name__ == "__main__":
