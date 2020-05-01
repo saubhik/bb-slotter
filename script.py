@@ -75,9 +75,6 @@ def run_service():
     with open(file="subscribers.json", mode="r") as file:
         subscribers: List[Dict] = json.load(file)
 
-    first_time = True
-    previous_city = ""
-
     while True:
         try:
             for subscriber in subscribers:
@@ -90,26 +87,16 @@ def run_service():
                     "tata-salt--iodized-1-kg-pouch/"
                 )
 
-                if first_time:
-                    location_element = wait.until(
-                        expected_conditions.element_to_be_clickable(
-                            (By.XPATH, "//div[@id='mainHeader']/div[3]/div[1]/div[2]")
+                element = wait.until(
+                    expected_conditions.element_to_be_clickable(
+                        (
+                            By.XPATH,
+                            "//div[@id='mainHeader']//*[contains(text(), "
+                            f"'Change Location')]",
                         )
                     )
-                    logging.info(f"Currently at {location_element.text}...")
-                    location_element.click()
-                    first_time = False
-                else:
-                    element = wait.until(
-                        expected_conditions.element_to_be_clickable(
-                            (
-                                By.XPATH,
-                                "//div[@id='mainHeader']//*[contains(text(), "
-                                f"'{previous_city}')]",
-                            )
-                        )
-                    )
-                    element.click()
+                )
+                element.click()
 
                 element = wait.until(
                     expected_conditions.element_to_be_clickable(
@@ -194,17 +181,15 @@ def run_service():
                 except TimeoutException:
                     logging.warning("Timeout trying to get slot information")
 
-                previous_city = subscriber["city"]
+                driver.delete_all_cookies()
 
         except Exception as exc:
             logging.exception(exc)
             logging.info("Starting a new session...")
-            driver.delete_all_cookies()
             driver.close()
             driver = webdriver.Chrome(options=options)
             driver.implicitly_wait(time_to_wait=10)
             wait = WebDriverWait(driver=driver, timeout=20)
-            first_time = True
 
 
 if __name__ == "__main__":
