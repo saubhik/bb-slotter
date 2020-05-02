@@ -4,7 +4,7 @@ import os
 import re
 import smtplib
 from datetime import datetime
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 from selenium import webdriver
 from selenium.common.exceptions import TimeoutException
@@ -58,7 +58,7 @@ def send_email(subscriber: Dict, message: str) -> None:
 
 class Service:
     def __init__(self):
-        self._driver: WebDriver
+        self._driver: Optional[WebDriver] = None
         self._previous_location: str
 
     def _init_driver(self):
@@ -69,6 +69,8 @@ class Service:
         options.add_argument("--window-size=1920,1080")
         options.add_argument("--start-maximized")
         options.add_argument("--no-sandbox")
+        if self._driver is not None:
+            self._driver.close()
         self._driver = webdriver.Chrome(options=options)
         self._driver.get(
             url="https://www.bigbasket.com/pd/241600/tata-salt--iodized-1-kg-pouch/"
