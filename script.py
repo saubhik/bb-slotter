@@ -8,16 +8,12 @@ from typing import Dict, List
 
 from selenium import webdriver
 from selenium.common.exceptions import TimeoutException
+from selenium.webdriver.android.webdriver import WebDriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.support.wait import WebDriverWait
-
-
-def _sanitise_string(text: str):
-    return (
-        text.encode(encoding="ascii", errors="ignore").decode(encoding="ascii").strip()
-    )
 
 
 def send_email(subscriber: Dict, message: str) -> None:
@@ -60,141 +56,143 @@ def send_email(subscriber: Dict, message: str) -> None:
         logging.exception(e)
 
 
-def run_service():
-    options = webdriver.ChromeOptions()
-    options.add_argument("--headless")
-    options.add_argument("--disable-extensions")
-    options.add_argument("--window-size=1920,1080")
-    options.add_argument("--start-maximized")
-    options.add_argument("--no-sandbox")
+class Service:
+    def __init__(self):
+        self._driver: WebDriver
+        self._previous_location: str
 
-    driver = webdriver.Chrome(options=options)
-    driver.implicitly_wait(time_to_wait=10)
-    wait = WebDriverWait(driver=driver, timeout=20)
+    def _init_driver(self):
+        logging.info(msg="Starting a new session")
+        options = webdriver.ChromeOptions()
+        options.add_argument("--headless")
+        options.add_argument("--disable-extensions")
+        options.add_argument("--window-size=1920,1080")
+        options.add_argument("--start-maximized")
+        options.add_argument("--no-sandbox")
+        self._driver = webdriver.Chrome(options=options)
+        self._driver.get(
+            url="https://www.bigbasket.com/pd/241600/tata-salt--iodized-1-kg-pouch/"
+        )
+        self._previous_location = "560004, Bangalore"
 
-    with open(file="subscribers.json", mode="r") as file:
-        subscribers: List[Dict] = json.load(file)
+    def _get_element(self, xpath: str) -> WebElement:
+        element: WebElement = WebDriverWait(driver=self._driver, timeout=10).until(
+            expected_conditions.element_to_be_clickable((By.XPATH, xpath))
+        )
+        return element
 
-    previous_city = "Change Location"
+    def _list_elements(self, xpath: str) -> List[WebElement]:
+        elements: List[WebElement] = WebDriverWait(
+            driver=self._driver, timeout=10
+        ).until(expected_conditions.presence_of_all_elements_located((By.XPATH, xpath)))
+        return elements
 
-    while True:
-        try:
-            for subscriber in subscribers:
-                logging.info(
-                    f"Trying city: {subscriber['city']}, area: {subscriber['area']}"
-                )
+    def _refresh_page(self):
+        self._driver.refresh()
 
-                driver.get(
-                    url="https://www.bigbasket.com/pd/241600/"
-                    "tata-salt--iodized-1-kg-pouch/"
-                )
+    def _load_page(self):
+        self._driver.get(
+            url="https://www.bigbasket.com/pd/241600/tata-salt--iodized-1-kg-pouch/"
+        )
 
-                element = wait.until(
-                    expected_conditions.element_to_be_clickable(
-                        (
-                            By.XPATH,
-                            "//div[@id='mainHeader']//*[contains(text(), "
-                            f"'{previous_city}')]",
+    def run(self):
+        self._init_driver()
+
+        with open(file="subscribers.json", mode="r") as file:
+            subscribers: List[Dict] = json.load(file)
+
+        while True:
+            try:
+                for subscriber in subscribers:
+                    logging.info(
+                        f"Trying city: {subscriber['city']}, area: {subscriber['area']}"
+                    )
+
+                    element = self._get_element(
+                        xpath="//div[@id='mainHeader']"
+                        f"//*[text()='{self._previous_location}']"
+                    )
+                    current_city = element.text.split()[-1]
+                    element.click()
+
+                    element = self._get_element(
+                        xpath=f"//div[@id='mainHeader']//*[text()='{current_city}']"
+                    )
+                    element.click()
+
+                    # change city
+                    city_element = self._get_element(
+                        xpath="//input[@placeholder='Select your city']"
+                    )
+                    city_element.send_keys(subscriber["city"])
+                    city_element.send_keys(Keys.RETURN)
+
+                    logging.info(
+                        msg=f"Changed city from {current_city} to {subscriber['city']}"
+                    )
+
+                    # change area
+                    area_element = self._get_element(
+                        xpath="//input[@placeholder="
+                        "'Enter your area / apartment / pincode']",
+                    )
+                    area_element.send_keys(
+                        re.match(r"[a-zA-Z]+", subscriber["area"])[0]
+                    )
+                    area_choices = self._list_elements(
+                        xpath="//div[@id='modal']//ul/div"
+                    )
+
+                    area_found = False
+                    for choice in area_choices:
+                        if choice.text == subscriber["area"]:
+                            area_found = True
+                            logging.info(f"Found area {choice.text}")
+                            choice.click()
+                            break
+
+                    if not area_found:
+                        logging.error(msg=f"Area {subscriber['area']} not found")
+                        continue
+
+                    # submit location change
+                    submit_btn = self._get_element(
+                        xpath="//form[@action='/choose-city/']/button"
+                    )
+                    submit_btn.click()
+
+                    self._refresh_page()
+
+                    # check slot element
+                    try:
+                        slot_element = self._get_element(
+                            xpath="//div[@id='root']/"
+                            "div/div[2]/div[2]/div[3]/section/div[2]/div",
                         )
-                    )
-                )
-                element.click()
 
-                element = wait.until(
-                    expected_conditions.element_to_be_clickable(
-                        (By.XPATH, "//div[@id='modal']/div/div/div[2]/div[1]/span")
-                    )
-                )
-                logging.info(f"Changing city from {_sanitise_string(element.text)}...")
-                element.click()
-
-                # change city
-                city_element = wait.until(
-                    expected_conditions.presence_of_element_located(
-                        (By.XPATH, "//input[@placeholder='Select your city']")
-                    )
-                )
-                city_element.send_keys(subscriber["city"])
-                city_element.send_keys(Keys.RETURN)
-
-                # change area
-                area_element = wait.until(
-                    expected_conditions.presence_of_element_located(
-                        (
-                            By.XPATH,
-                            "//input"
-                            "[@placeholder='Enter your area / apartment / pincode']",
-                        )
-                    )
-                )
-
-                area_element.send_keys(re.match(r"[a-zA-Z]+", subscriber["area"])[0])
-                area_choices = wait.until(
-                    expected_conditions.presence_of_all_elements_located(
-                        (By.XPATH, "//div[@id='modal']//ul/div")
-                    )
-                )
-
-                area_found = False
-                for choice in area_choices:
-                    if choice.text == subscriber["area"]:
-                        area_found = True
-                        logging.info(f"Found area {choice.text}")
-                        choice.click()
-                        break
-
-                if not area_found:
-                    logging.error(msg=f"Area {subscriber['area']} not found")
-                    continue
-
-                # submit location change
-                submit_btn = wait.until(
-                    expected_conditions.element_to_be_clickable(
-                        (By.XPATH, "//form[@action='/choose-city/']/button")
-                    )
-                )
-                submit_btn.click()
-
-                # refresh the page
-                driver.refresh()
-
-                # check slot element
-                try:
-                    slot_element = wait.until(
-                        expected_conditions.presence_of_element_located(
-                            (
-                                By.XPATH,
-                                "//div[@id='root']/"
-                                "div/div[2]/div[2]/div[3]/section/div[2]/div",
+                        if (
+                            "All Slots Full. Please Try Again Later"
+                            in slot_element.text
+                        ):
+                            logging.info("Found all slots full...")
+                        else:
+                            logging.info("Found available slot!")
+                            send_email(
+                                subscriber=subscriber,
+                                message=f"City: {subscriber['city']}, "
+                                f"Area: {subscriber['area']}, "
+                                f"Slot: {slot_element.text}",
                             )
-                        )
-                    )
+                    except TimeoutException:
+                        logging.warning("Timeout trying to get slot information")
 
-                    if "All Slots Full. Please Try Again Later" in slot_element.text:
-                        logging.info("Found all slots full...")
-                    else:
-                        logging.info("Found available slot!")
-                        send_email(
-                            subscriber=subscriber,
-                            message=f"City: {subscriber['city']}, "
-                            f"Area: {subscriber['area']}, "
-                            f"Slot: {slot_element.text}",
-                        )
-                except TimeoutException:
-                    logging.warning("Timeout trying to get slot information")
+                    self._previous_location = subscriber["shortLocation"]
 
-                previous_city = subscriber["city"]
-
-        except Exception as exc:
-            logging.exception(exc)
-            logging.info("Starting a new session...")
-            driver.close()
-            driver = webdriver.Chrome(options=options)
-            driver.implicitly_wait(time_to_wait=10)
-            wait = WebDriverWait(driver=driver, timeout=20)
-            previous_city = "Change Location"
+            except Exception as exc:
+                logging.exception(exc)
+                self._init_driver()
 
 
 if __name__ == "__main__":
     logging.basicConfig(level="INFO")
-    run_service()
+    Service().run()
