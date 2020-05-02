@@ -3,6 +3,7 @@ import logging
 import os
 import re
 import smtplib
+import time
 from datetime import datetime
 from typing import Dict, List, Optional
 
@@ -92,11 +93,6 @@ class Service:
     def _refresh_page(self):
         self._driver.refresh()
 
-    def _load_page(self):
-        self._driver.get(
-            url="https://www.bigbasket.com/pd/241600/tata-salt--iodized-1-kg-pouch/"
-        )
-
     def run(self):
         self._init_driver()
 
@@ -163,6 +159,7 @@ class Service:
                     )
                     submit_btn.click()
 
+                    time.sleep(1)
                     self._refresh_page()
 
                     # check slot element
