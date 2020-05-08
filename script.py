@@ -3,7 +3,6 @@ import logging
 import os
 import re
 import smtplib
-import time
 from datetime import datetime
 from typing import Dict, List, Optional
 
@@ -70,23 +69,24 @@ class Service:
         options.add_argument("--window-size=1920,1080")
         options.add_argument("--start-maximized")
         options.add_argument("--no-sandbox")
+        options.add_experimental_option(
+            "prefs", {"profile.managed_default_content_settings.images": 2}
+        )
         if self._driver is not None:
             self._driver.close()
         self._driver = webdriver.Chrome(options=options)
-        self._driver.get(
-            url="https://www.bigbasket.com/pd/241600/tata-salt--iodized-1-kg-pouch/"
-        )
+        self._driver.get(url="https://www.bigbasket.com/")
         self._previous_location = "560004, Bangalore"
 
-    def _get_element(self, xpath: str) -> WebElement:
-        element: WebElement = WebDriverWait(driver=self._driver, timeout=10).until(
+    def _get_element(self, xpath: str, timeout: int = 10) -> WebElement:
+        element: WebElement = WebDriverWait(driver=self._driver, timeout=timeout).until(
             expected_conditions.element_to_be_clickable((By.XPATH, xpath))
         )
         return element
 
-    def _list_elements(self, xpath: str) -> List[WebElement]:
+    def _list_elements(self, xpath: str, timeout: int = 10) -> List[WebElement]:
         elements: List[WebElement] = WebDriverWait(
-            driver=self._driver, timeout=10
+            driver=self._driver, timeout=timeout
         ).until(expected_conditions.presence_of_all_elements_located((By.XPATH, xpath)))
         return elements
 
@@ -107,27 +107,22 @@ class Service:
                     )
 
                     element = self._get_element(
-                        xpath="//div[@id='mainHeader']"
-                        f"//*[text()='{self._previous_location}']"
-                    )
-                    current_city = element.text.split()[-1]
-                    element.click()
-
-                    element = self._get_element(
-                        xpath=f"//div[@id='mainHeader']//*[text()='{current_city}']"
+                        xpath="//*[contains(text(), "
+                        f"'{self._previous_location.split(',')[0]}')]"
                     )
                     element.click()
 
                     # change city
                     city_element = self._get_element(
+                        xpath="//*[@placeholder='Select your city']"
+                    )
+                    city_element.click()
+                    city_element = self._get_element(
                         xpath="//input[@placeholder='Select your city']"
                     )
                     city_element.send_keys(subscriber["city"])
                     city_element.send_keys(Keys.RETURN)
-
-                    logging.info(
-                        msg=f"Changed city from {current_city} to {subscriber['city']}"
-                    )
+                    logging.info(msg=f"Changed city to {subscriber['city']}")
 
                     # change area
                     area_element = self._get_element(
@@ -138,7 +133,7 @@ class Service:
                         re.match(r"[a-zA-Z]+", subscriber["area"])[0]
                     )
                     area_choices = self._list_elements(
-                        xpath="//div[@id='modal']//ul/div"
+                        xpath="//div[contains(@class, 'area-select')]//ul/li"
                     )
 
                     area_found = False
@@ -154,36 +149,27 @@ class Service:
                         continue
 
                     # submit location change
-                    submit_btn = self._get_element(
-                        xpath="//form[@action='/choose-city/']/button"
-                    )
+                    submit_btn = self._get_element(xpath="//button[@type='submit']")
                     submit_btn.click()
-
-                    time.sleep(1)
-                    self._refresh_page()
 
                     # check slot element
                     try:
                         slot_element = self._get_element(
-                            xpath="//div[@id='root']/"
-                            "div/div[2]/div[2]/div[3]/section/div[2]/div",
+                            xpath="//*[contains(text(), 'Standard Delivery')]",
+                            timeout=1,
                         )
-
-                        if (
-                            "All Slots Full. Please Try Again Later"
-                            in slot_element.text
-                        ):
-                            logging.info("Found all slots full...")
-                        else:
-                            logging.info("Found available slot!")
-                            send_email(
-                                subscriber=subscriber,
-                                message=f"City: {subscriber['city']}, "
-                                f"Area: {subscriber['area']}, "
-                                f"Slot: {slot_element.text}",
-                            )
+                        logging.info("Found available slot!")
+                        send_email(
+                            subscriber=subscriber,
+                            message=f"City: {subscriber['city']}, "
+                            f"Area: {subscriber['area']}, "
+                            f"Slot: {slot_element.text}",
+                        )
                     except TimeoutException:
-                        logging.warning("Timeout trying to get slot information")
+                        slot_element = self._get_element(
+                            xpath="//*[contains(text(), 'All Slots Full')]", timeout=1,
+                        )
+                        logging.info(msg=slot_element.text)
 
                     self._previous_location = subscriber["shortLocation"]
 
