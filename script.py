@@ -90,9 +90,6 @@ class Service:
         ).until(expected_conditions.presence_of_all_elements_located((By.XPATH, xpath)))
         return elements
 
-    def _refresh_page(self):
-        self._driver.refresh()
-
     def run(self):
         self._init_driver()
 
@@ -155,21 +152,21 @@ class Service:
                     # check slot element
                     try:
                         slot_element = self._get_element(
+                            xpath="//*[contains(text(), 'All Slots Full')]"
+                        )
+                        logging.info(msg=slot_element.text)
+                    except TimeoutException:
+                        slot_element = self._get_element(
                             xpath="//*[contains(text(), 'Standard Delivery')]",
-                            timeout=1,
                         )
                         logging.info("Found available slot!")
+                        logging.info(msg=slot_element.text)
                         send_email(
                             subscriber=subscriber,
                             message=f"City: {subscriber['city']}, "
                             f"Area: {subscriber['area']}, "
                             f"Slot: {slot_element.text}",
                         )
-                    except TimeoutException:
-                        slot_element = self._get_element(
-                            xpath="//*[contains(text(), 'All Slots Full')]", timeout=1,
-                        )
-                        logging.info(msg=slot_element.text)
 
                     self._previous_location = subscriber["shortLocation"]
 
